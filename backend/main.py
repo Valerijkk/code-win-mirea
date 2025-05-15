@@ -5,13 +5,14 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 
-# Логи уровня DEBUG
+# Включаем DEBUG-логи
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
-# Загрузка переменных из backend/.env
+# Загружаем переменные из файла backend/.env
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), ".env"))
 
+# Импортируем роутер для /api/generate
 from routes.generate import router as generate_router
 
 app = FastAPI(
@@ -20,12 +21,13 @@ app = FastAPI(
     version="1.0.0",
 )
 
-# Разрешаем React (http://localhost:3000)
+# Разрешаем CORS для любого фронтенда (для простоты)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+# Включаем маршруты из generate.py под префиксом /api
 app.include_router(generate_router, prefix="/api")
