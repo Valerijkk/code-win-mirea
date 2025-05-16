@@ -1,58 +1,84 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './App.css';
 
 export default function App() {
-    const [prompt, setPrompt] = useState('');
-    const [response, setResponse] = useState('');
-    const [loading, setLoading] = useState(false);
+    const [messages, setMessages] = useState([]); // { role, text }
+    const [input, setInput]       = useState('');
+    const [loading, setLoading]   = useState(false);
+    const bottomRef = useRef(null);
 
-    const handleSubmit = async (e) => {
+    // автоскролл
+    useEffect(() => {
+        bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, [messages]);
+
+    const sendMessage = async e => {
         e.preventDefault();
-        if (!prompt.trim()) return;
+        if (!input.trim()) return;
+
+        // 1) своё сообщение
+        setMessages(ms => [...ms, { role: 'user', text: input }]);
         setLoading(true);
-        setResponse('');
 
         try {
+            // 2) POST /api/generate
             const res = await fetch('/api/generate', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ prompt }),
+                body: JSON.stringify({ prompt: input }),
             });
-
-            // Если бэкенд вернул ошибку — вытащим текст
             const data = await res.json();
-            if (!res.ok) {
-                setResponse(`Ошибка: ${data.detail || res.status}`);
-            } else {
-                setResponse(data.response);
+            console.log('Получили с сервера:', data);
+
+            // 3) если есть think → сначала добавляем «мысль»
+            if (data.think) {
+                setMessages(ms => [
+                    ...ms,
+                    { role: 'bot-think', text: data.think }
+                ]);
             }
+
+            // 4) потом ответ
+            setMessages(ms => [
+                ...ms,
+                { role: 'bot', text: data.response }
+            ]);
         } catch (err) {
-            setResponse(`Сетевая ошибка: ${err.message}`);
+            setMessages(ms => [
+                ...ms,
+                { role: 'bot', text: `Сетевая ошибка: ${err.message}` }
+            ]);
         } finally {
+            setInput('');
             setLoading(false);
         }
     };
 
     return (
-        <div className="container">
-            <h2>Чат с моделью DeepSeek-R1:1.5b</h2>
-            <form onSubmit={handleSubmit}>
+        <div className="app">
+            <header className="header">🐋 DeepSeek</header>
+
+            <div className="chat-container">
+                {messages.map((m, i) => (
+                    <div key={i} className={`message ${m.role}`}>
+                        {m.text}
+                    </div>
+                ))}
+                <div ref={bottomRef}/>
+            </div>
+
+            <form className="input-bar" onSubmit={sendMessage}>
                 <input
                     type="text"
-                    placeholder="Введите запрос"
-                    value={prompt}
-                    onChange={(e) => setPrompt(e.target.value)}
+                    placeholder="Напишите сообщение..."
+                    value={input}
+                    onChange={e => setInput(e.target.value)}
                     disabled={loading}
                 />
-                <button type="submit" disabled={loading || !prompt.trim()}>
-                    {loading ? 'Загрузка...' : 'Отправить'}
+                <button type="submit" disabled={loading || !input.trim()}>
+                    {loading ? '…' : '➤'}
                 </button>
             </form>
-            {response && (
-                <div className="response">
-                    <pre>{response}</pre>
-                </div>
-            )}
         </div>
     );
 }
