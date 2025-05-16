@@ -14,8 +14,8 @@ router = APIRouter()
 class GenerateRequest(BaseModel):
     prompt: str
 
-OLLAMA_URL   = os.getenv("OLLAMA_URL", "http://127.0.0.1:11435/api/generate")
-OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "deepseek-r1:1.5b")
+OLLAMA_URL   = os.getenv("OLLAMA_URL", "http://127.0.0.1:11436/api/generate")
+OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "ollama run llama3.2:3b")
 
 @router.post("/generate")
 async def generate(req: GenerateRequest):
