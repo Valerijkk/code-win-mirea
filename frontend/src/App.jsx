@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import './App.css';
 import Button from './components/Button';
 import Image from './components/Image';
+import Otstoy from './components/Otstoy';
 
 export default function App() {
     const [messages, setMessages] = useState([]); // { role, text }
@@ -73,27 +74,43 @@ export default function App() {
     return (
         <div class="w-screen h-screen bg-neutral-800 flex">
             {isWindowVisible &&  (
-                <div class="absolute left-0 top-0 z-1 w-3/22 h-screen bg-neutral-900 flex flex-col justify-between"> {/* развёрнутое боковое меню */}
-                    <div class="h-1/9 w-full bg-gray-500 flex justify-between">
-                        <div class="bg-white w-6/9">
-
+                <div class="w-3/19 h-screen bg-neutral-900 flex flex-col justify-between text-neutral-400 font-semibold"> {/* развёрнутое боковое меню */}
+                    <div class="h-1/9 w-full flex justify-between">
+                        <div class="w-6/9 flex flex-col justify-center"> {/* название */}
+                            <div class="h-1/2 w-full text-center text-3xl">
+                                китёнок
+                            </div>
                         </div>
-                        <div class="bg-white w-2/11">
 
-                        </div>
+                        <Otstoy help="свернуть меню" image="" onClick={toggleSideBar}/> {/* свёртование */}
                     </div>
-                    <div class="h-1/16 w-5/9 bg-gray-400">
+
+                    <div class="h-1/17 w-5/9 flex justify-center">
+                        <button class="w-13/16 bg-blue-600 rounded-2xl flex flex-col justify-center">  {/* новый чат */}
+                            <div class="h-1/2 flex justify-center">
+                                <image class="w-1/5 bg-white">
+
+                                </image>
+                                <div class="pt-1 w-13/20 text-white text-sm text-right">
+                                    Новый чат
+                                </div>
+                            </div>
+                        </button>
+                    </div>
+
+                    <div class="h-full w-full">  {/* заготовка под список чатов */}
 
                     </div>
-                    <div class="h-full w-full bg-gray-300">
 
-                    </div>
                     <div class="h-1/12 w-full flex flex-col justify-center"> {/* профиль */}
                         <div class="h-1/2 flex justify-center">
                             <div class="w-1/8 bg-white rounded-full">
+                                <image>
 
+                                </image>
                             </div>
-                            <div class="pl-2 pt-2 w-17/24 text-sm text-neutral-400">
+
+                            <div class="pl-2 pt-2 w-17/24 text-sm">
                                 Мой профиль
                             </div>
                         </div>
@@ -101,28 +118,31 @@ export default function App() {
                 </div>
             )}
 
-            <div class="w-1/28 h-screen bg-neutral-900 flex flex-col justify-between"> {/* сжатое боковое меню */}
-                <div class="h-1/2"> {/* вверхняя часть */}
-                    <div class="h-1/6 flex justify-center"> {/* лого */}
-                        <div class="w-2/3 flex flex-col justify-center">
-                            <button class="h-1/2 text-center text-4xl">
-                                <image>
-                                    🐋 {/* кит, просто кит, думает, что крутой, но на деле всё совсем не так, это я его сюда засунул, я для него бог, если захочу, то его тут не будет, но он мили, так что я его пока что оставлю, но не дай бог он что-либо натворит */}
-                                </image>
-                            </button>
+            {!isWindowVisible &&  (
+                <div class="w-1/27 h-screen bg-neutral-900 flex flex-col justify-between"> {/* сжатое боковое меню */}
+                    <div class="h-1/2"> {/* вверхняя часть */}
+                        <div class="h-1/6 flex justify-center"> {/* лого */}
+                            <div class="w-2/3 flex flex-col justify-center">
+                                <button class="h-1/2 text-center text-4xl">
+                                    <image>
+                                        🐋 {/* кит, просто кит, думает, что крутой, но на деле всё совсем не так, это я его сюда засунул, я для него бог, если захочу, то его тут не будет, но он мили, так что я его пока что оставлю, но не дай бог он что-либо натворит */}
+                                    </image>
+                                </button>
+                            </div>
                         </div>
+
+                        <Image help="развернуть меню" image="" onClick={toggleSideBar}/> {/* развёртывание */}
+
+                        <Image help="добавить чат" image=""/> {/* добавление чата */}
                     </div>
 
-                    <Image help="развернуть/свернуть меню" image="" onClick={toggleSideBar}/> {/* свёртование/развёртывание */}
-
-                    <Image help="добавить чат" image=""/> {/* добавление чата */}
+                    <div class="h-1/2 flex flex-col justify-end"> {/* нижняя часть */}
+                        <Image help="открыть профиль" image=""/> {/* аккаунт и всё такое */}
+                    </div>
                 </div>
-                <div class="h-1/2 flex flex-col justify-end"> {/* нижняя часть */}
-                    <Image help="открыть профиль" image=""/> {/* аккаунт и всё такое */}
-                </div>
-            </div>
+            )}
 
-            <div class="w-27/28 h-full flex justify-center"> {/* основной экран */}
+            <div class="w-full h-full flex justify-center"> {/* основной экран */}
                 <div class="w-12/28">
                     <div class="h-2/28 flex flex-col justify-center"> {/* заголовок */}
                         <div class="text-center text-white font-semibold">
@@ -150,6 +170,7 @@ export default function App() {
                                         onChange={e => setInput(e.target.value)}
                                         disabled={loading}
                                     />
+
                                     <div class="h-1/3 flex justify-between"> {/* опции */}
                                         <div> {/* левая часть */} 
                                             <Button text="анализ" help="производит эмоциональный анализ текста" image="" index={0} isActive={buttonsState[0]} toggleState={toggleButtonState}/> {/* эмоциональный анализ */}
@@ -160,10 +181,12 @@ export default function App() {
 
                                             <Button text="музыка" help="напишет песню по введёному" image="" index={3} isActive={buttonsState[3]} toggleState={toggleButtonState}/> {/* генерация музыки */}
                                         </div>
+
                                         <div class="w-2/20 flex justify-between"> {/* правая часть */}
                                             <button class="w-2/5 h-full bg-white"> {/* приложить файлы */}
                                                 
                                             </button>
+
                                             <button class="w-2/5 h-full bg-neutral-500 rounded-full text-center text-2xl leading-1 text-neutral-700" type="submit" disabled={loading || !input.trim()}> {/* отправить запрос */}
                                                 {loading ? '…' : '↑'} {/* в массиве buttonsState хранятся данные, какие опции выбраны */}
                                             </button>

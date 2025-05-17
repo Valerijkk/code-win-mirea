@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 
-const Image = ({ help, image, onClick }) => {
+const Otstoy = ({ help, image, onClick }) => {
     const [isHovered, setIsHovered] = useState(false);
 
     return (
-        <div class="relative h-1/8 flex justify-center text-sm" onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
-            <div class="w-1/2 flex flex-col justify-center">
-                <button class="h-1/2 bg-white" onClick={onClick}>
+        <div class="relative w-2/11 flex flex-col justify-center" onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
+            <div class="h-1/3 w-full flex justify-center">
+                <button class="w-5/8 bg-white" onClick={onClick}>
                     <image src={image}>
-
+                        
                     </image>
                 </button>
             </div>
@@ -24,4 +24,4 @@ const Image = ({ help, image, onClick }) => {
     );
 };
 
-export default Image;
+export default Otstoy;
