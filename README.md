@@ -69,7 +69,9 @@ cd code-win-mirea
    или в bash:
 
    ```bash
-   OLLAMA_HOST=127.0.0.1:11435 ollama serve
+   $Env:OLLAMA_HOST = "127.0.0.1:11435"
+    ollama serve
+
    ```
 
    — оставьте этот терминал открытым.

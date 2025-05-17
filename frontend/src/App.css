@@ -1,37 +1,68 @@
-body {
+/* полный-height */
+html, body, #root {
+    height: 100%;
     margin: 0;
-    font-family: sans-serif;
-    background: #f0f2f5;
 }
-.container {
-    max-width: 600px;
-    margin: 2rem auto;
-    background: #fff;
-    padding: 2rem;
+
+.logo {
+    font-size: 1.25rem;
+}
+
+.message {
+    max-width: 70%;
+    margin-bottom: 12px;
+    padding: 10px 14px;
     border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    line-height: 1.4;
+    word-wrap: break-word;
 }
-input, button {
-    width: 100%;
-    padding: 0.75rem;
-    margin-top: 0.5rem;
-    font-size: 1rem;
-    box-sizing: border-box;
+.message.user {
+    background: #005bb5;
+    align-self: flex-end;
+    margin-left: auto;
 }
-button {
-    cursor: pointer;
-    background: #007bff;
-    color: #fff;
+.message.bot {
+    background: #2e2e2e;
+    align-self: flex-start;
+    margin-right: auto;
+}
+
+.input-bar input {
+    flex: 1;
+    padding: 8px;
     border: none;
     border-radius: 4px;
+    margin-right: 8px;
+    background: #3a3a3a;
+    color: #fff;
+    font-size: 1rem;
 }
-button:disabled {
-    background: #999;
-}
-.response {
-    white-space: pre-wrap;
-    background: #f5f5f5;
-    padding: 1rem;
-    margin-top: 1rem;
+.input-bar button {
+    width: 48px;
+    border: none;
+    background: #007bff;
+    color: #fff;
     border-radius: 4px;
+    font-size: 1.2rem;
+    cursor: pointer;
+}
+.input-bar button:disabled {
+    background: #555;
+    cursor: default;
+}
+.message.bot-think {
+    background: #444;      /* чуть светлее, чем бот */
+    font-style: italic;
+    color: #ddd;
+    align-self: flex-start;
+}
+
+.message.bot {
+    background: #2e2e2e;
+    align-self: flex-start;
+}
+
+.message.user {
+    background: #005bb5;
+    align-self: flex-end;
 }
