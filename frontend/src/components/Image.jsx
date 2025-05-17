@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 
-const Image = ({ help, image }) => {
+const Image = ({ help, image, onClick }) => {
     const [isHovered, setIsHovered] = useState(false);
 
     return (
         <div class="relative h-1/8 flex justify-center text-sm" onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
             <div class="w-1/2 flex flex-col justify-center">
-                <button class="relative h-1/2 bg-white">
+                <button class="relative h-1/2 bg-white" onClick={onClick}>
                     <image src={image}>
 
                     </image>

@@ -9,6 +9,11 @@ export default function App() {
     const [loading, setLoading]   = useState(false);
     const bottomRef = useRef(null);
     const [buttonsState, setButtonsState] = useState([false, false, false, false]);
+    const [isWindowVisible, setIsWindowVisible] = useState(false);
+
+    const toggleSideBar = () => {
+        setIsWindowVisible(!isWindowVisible);
+    };
 
     // автоскролл
     useEffect(() => {
@@ -67,26 +72,55 @@ export default function App() {
 
     return (
         <div class="w-screen h-screen bg-neutral-800 flex">
-            <header class="w-1/28 h-screen bg-neutral-900 flex flex-col justify-between"> {/* боковой хедер */}
+            {isWindowVisible &&  (
+                <div class="absolute left-0 top-0 z-1 w-3/22 h-screen bg-neutral-900 flex flex-col justify-between"> {/* развёрнутое боковое меню */}
+                    <div class="h-1/9 w-full bg-gray-500 flex justify-between">
+                        <div class="bg-white w-6/9">
+
+                        </div>
+                        <div class="bg-white w-2/11">
+
+                        </div>
+                    </div>
+                    <div class="h-1/16 w-5/9 bg-gray-400">
+
+                    </div>
+                    <div class="h-full w-full bg-gray-300">
+
+                    </div>
+                    <div class="h-1/12 w-full flex flex-col justify-center"> {/* профиль */}
+                        <div class="h-1/2 flex justify-center">
+                            <div class="w-1/8 bg-white rounded-full">
+
+                            </div>
+                            <div class="pl-2 pt-2 w-17/24 text-sm text-neutral-400">
+                                Мой профиль
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            <div class="w-1/28 h-screen bg-neutral-900 flex flex-col justify-between"> {/* сжатое боковое меню */}
                 <div class="h-1/2"> {/* вверхняя часть */}
                     <div class="h-1/6 flex justify-center"> {/* лого */}
                         <div class="w-2/3 flex flex-col justify-center">
                             <button class="h-1/2 text-center text-4xl">
                                 <image>
-                                    🐋
+                                    🐋 {/* кит, просто кит, думает, что крутой, но на деле всё совсем не так, это я его сюда засунул, я для него бог, если захочу, то его тут не будет, но он мили, так что я его пока что оставлю, но не дай бог он что-либо натворит */}
                                 </image>
                             </button>
                         </div>
                     </div>
 
-                    <Image help="развернуть/свернуть меню" image=""/> {/* свёртование/развёртывание */}
+                    <Image help="развернуть/свернуть меню" image="" onClick={toggleSideBar}/> {/* свёртование/развёртывание */}
 
                     <Image help="добавить чат" image=""/> {/* добавление чата */}
                 </div>
                 <div class="h-1/2 flex flex-col justify-end"> {/* нижняя часть */}
                     <Image help="открыть профиль" image=""/> {/* аккаунт и всё такое */}
                 </div>
-            </header>
+            </div>
 
             <div class="w-27/28 h-full flex justify-center"> {/* основной экран */}
                 <div class="w-12/28">
