@@ -4,31 +4,8 @@ html, body, #root {
     margin: 0;
 }
 
-.app {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    background: #1e1e1e;
-    color: #fff;
-    font-family: sans-serif;
-}
-
-.header {
-    height: 56px;
-    display: flex;
-    align-items: center;
-    padding: 0 16px;
-    background: #272727;
-    border-bottom: 1px solid #333;
-}
 .logo {
     font-size: 1.25rem;
-}
-
-.chat-container {
-    flex: 1;
-    overflow-y: auto;
-    padding: 16px;
 }
 
 .message {
@@ -50,12 +27,6 @@ html, body, #root {
     margin-right: auto;
 }
 
-.input-bar {
-    display: flex;
-    padding: 8px;
-    background: #272727;
-    border-top: 1px solid #333;
-}
 .input-bar input {
     flex: 1;
     padding: 8px;
