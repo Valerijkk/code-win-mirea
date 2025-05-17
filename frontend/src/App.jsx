@@ -8,11 +8,20 @@ export default function App() {
     const [input, setInput]       = useState('');
     const [loading, setLoading]   = useState(false);
     const bottomRef = useRef(null);
+    const [buttonsState, setButtonsState] = useState([false, false, false, false]);
 
     // автоскролл
     useEffect(() => {
         bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages]);
+
+    const toggleButtonState = (index) => {
+        setButtonsState((prevState) => {
+            const newState = [...prevState];
+            newState[index] = !newState[index];
+            return newState;
+        });
+    };
 
     const sendMessage = async e => {
         e.preventDefault();
@@ -70,12 +79,12 @@ export default function App() {
                         </div>
                     </div>
 
-                    <Image image=""/> {/* свёртование/развёртывание */}
+                    <Image help="развернуть/свернуть меню" image=""/> {/* свёртование/развёртывание */}
 
-                    <Image image=""/> {/* добавление чата */}
+                    <Image help="добавить чат" image=""/> {/* добавление чата */}
                 </div>
                 <div class="h-1/2 flex flex-col justify-end"> {/* нижняя часть */}
-                    <Image image=""/> {/* аккаунт и всё такое */}
+                    <Image help="открыть профиль" image=""/> {/* аккаунт и всё такое */}
                 </div>
             </header>
 
@@ -109,20 +118,20 @@ export default function App() {
                                     />
                                     <div class="h-1/3 flex justify-between"> {/* опции */}
                                         <div> {/* левая часть */} 
-                                            <Button text="анализ" image=""/> {/* эмоциональный анализ */}
+                                            <Button text="анализ" help="производит эмоциональный анализ текста" image="" index={0} isActive={buttonsState[0]} toggleState={toggleButtonState}/> {/* эмоциональный анализ */}
 
-                                            <Button text="текст" image=""/> {/* генерация текста */}
+                                            <Button text="текст" help="сгенерирует текст по введёному" image="" index={1} isActive={buttonsState[1]} toggleState={toggleButtonState}/> {/* генерация текста */}
 
-                                            <Button text="изображение" image=""/> {/* генерация изображения */}
+                                            <Button text="изображение" help="создаст картину по тексту" image="" index={2} isActive={buttonsState[2]} toggleState={toggleButtonState}/> {/* генерация изображения */}
 
-                                            <Button text="музыка" image=""/> {/* генерация музыки */}
+                                            <Button text="музыка" help="напишет песню по введёному" image="" index={3} isActive={buttonsState[3]} toggleState={toggleButtonState}/> {/* генерация музыки */}
                                         </div>
                                         <div class="w-2/20 flex justify-between"> {/* правая часть */}
-                                            <button class="w-2/5 h-full bg-white" type="submit" disabled={loading || !input.trim()}> {/* приложить файлы */}
-                                                {loading ? '…' : ''}
+                                            <button class="w-2/5 h-full bg-white"> {/* приложить файлы */}
+                                                
                                             </button>
                                             <button class="w-2/5 h-full bg-neutral-500 rounded-full text-center text-2xl leading-1 text-neutral-700" type="submit" disabled={loading || !input.trim()}> {/* отправить запрос */}
-                                                {loading ? '…' : '↑'}
+                                                {loading ? '…' : '↑'} {/* в массиве buttonsState хранятся данные, какие опции выбраны */}
                                             </button>
                                         </div>
                                     </div>
