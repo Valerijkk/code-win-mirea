@@ -6,9 +6,9 @@ const Otstoy = ({ help, image, onClick }) => {
     return (
         <div class="relative w-2/11 flex flex-col justify-center" onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
             <div class="h-1/3 w-full flex justify-center">
-                <button class="w-5/8 bg-white" onClick={onClick}>
-                    <image src={image}>
-                        
+                <button class="w-5/8" onClick={onClick}>
+                    <image class="text-neutral-300 text-3xl rotate-180" src={image}>
+                        {image}
                     </image>
                 </button>
             </div>

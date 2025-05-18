@@ -82,7 +82,7 @@ export default function App() {
                             </div>
                         </div>
 
-                        <Otstoy help="свернуть меню" image="" onClick={toggleSideBar}/> {/* свёртование */}
+                        <Otstoy help="свернуть меню" image="➤" onClick={toggleSideBar}/> {/* свёртование */}
                     </div>
 
                     <div class="h-1/17 w-5/9 flex justify-center">
@@ -104,9 +104,9 @@ export default function App() {
 
                     <div class="h-1/12 w-full flex flex-col justify-center"> {/* профиль */}
                         <div class="h-1/2 flex justify-center">
-                            <div class="w-1/8 bg-white rounded-full">
-                                <image>
-
+                            <div class="w-1/8 rounded-full">
+                                <image class="text-neutral-300 text-3xl">
+                                    ☻
                                 </image>
                             </div>
 
@@ -131,13 +131,13 @@ export default function App() {
                             </div>
                         </div>
 
-                        <Image help="развернуть меню" image="" onClick={toggleSideBar}/> {/* развёртывание */}
+                        <Image help="развернуть меню" image="➤" onClick={toggleSideBar}/> {/* развёртывание */}
 
-                        <Image help="добавить чат" image=""/> {/* добавление чата */}
+                        {/*<Image help="добавить чат" image=""/> {/* добавление чата */}
                     </div>
 
                     <div class="h-1/2 flex flex-col justify-end"> {/* нижняя часть */}
-                        <Image help="открыть профиль" image=""/> {/* аккаунт и всё такое */}
+                        <Image help="открыть профиль" image="☻"/> {/* аккаунт и всё такое */}
                     </div>
                 </div>
             )}
@@ -182,11 +182,7 @@ export default function App() {
                                             <Button text="музыка" help="напишет песню по введёному" image="" index={3} isActive={buttonsState[3]} toggleState={toggleButtonState}/> {/* генерация музыки */}
                                         </div>
 
-                                        <div class="w-2/20 flex justify-between"> {/* правая часть */}
-                                            <button class="w-2/5 h-full bg-white"> {/* приложить файлы */}
-                                                
-                                            </button>
-
+                                        <div class="w-2/20 flex justify-end"> {/* правая часть */}
                                             <button class="w-2/5 h-full bg-neutral-500 rounded-full text-center text-2xl leading-1 text-neutral-700" type="submit" disabled={loading || !input.trim()}> {/* отправить запрос */}
                                                 {loading ? '…' : '↑'} {/* в массиве buttonsState хранятся данные, какие опции выбраны */}
                                             </button>

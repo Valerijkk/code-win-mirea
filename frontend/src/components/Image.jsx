@@ -6,9 +6,9 @@ const Image = ({ help, image, onClick }) => {
     return (
         <div class="relative h-1/8 flex justify-center text-sm" onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
             <div class="w-1/2 flex flex-col justify-center">
-                <button class="h-1/2 bg-white" onClick={onClick}>
-                    <image src={image}>
-
+                <button class="h-1/2" onClick={onClick}>
+                    <image class="text-neutral-300 text-3xl" src={image}>
+                        {image}
                     </image>
                 </button>
             </div>
