@@ -1,81 +1,68 @@
-/* src/App.css */
-.app-container {
-    display: flex;
-    height: 100vh;
-    background: #1e1e1e;
-    color: #fff;
+/* полный-height */
+html, body, #root {
+    height: 100%;
+    margin: 0;
 }
 
-.sidebar {
-    width: 60px;
-    background: #2a2a2a;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+.logo {
+    font-size: 1.25rem;
 }
 
-.chat-container {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-}
-
-.header {
-    padding: 16px;
-    font-size: 18px;
-    text-align: center;
-    border-bottom: 1px solid #333;
-}
-
-.messages {
-    flex: 1;
-    padding: 16px;
-    overflow-y: auto;
-}
-
-.msg.user {
-    text-align: right;
-    margin: 8px 0;
-}
-
-.msg.bot {
-    text-align: left;
-    margin: 8px 0;
-}
-
-.img-out {
-    max-width: 100%;
+.message {
+    max-width: 70%;
+    margin-bottom: 12px;
+    padding: 10px 14px;
     border-radius: 8px;
-    margin: 8px 0;
+    line-height: 1.4;
+    word-wrap: break-word;
+}
+.message.user {
+    background: #005bb5;
+    align-self: flex-end;
+    margin-left: auto;
+}
+.message.bot {
+    background: #2e2e2e;
+    align-self: flex-start;
+    margin-right: auto;
 }
 
-.input-area {
-    padding: 16px;
-    background: #2a2a2a;
-    display: flex;
-    flex-direction: column;
-}
-
-.text-input {
+.input-bar input {
+    flex: 1;
     padding: 8px;
     border: none;
     border-radius: 4px;
-    background: #1e1e1e;
+    margin-right: 8px;
+    background: #3a3a3a;
     color: #fff;
-    margin-bottom: 8px;
+    font-size: 1rem;
 }
-
-.buttons {
-    display: flex;
-    align-items: center;
-}
-
-.send-btn {
-    margin-left: auto;
-    padding: 8px 12px;
+.input-bar button {
+    width: 48px;
     border: none;
-    border-radius: 4px;
-    background: #4caf50;
+    background: #007bff;
     color: #fff;
+    border-radius: 4px;
+    font-size: 1.2rem;
     cursor: pointer;
+}
+.input-bar button:disabled {
+    background: #555;
+    cursor: default;
+}
+.message.bot-think {
+    background: #444;      /* чуть светлее, чем бот */
+    font-style: italic;
+    color: #ddd;
+    align-self: flex-start;
+}
+
+.message.bot {
+    background: #2e2e2e;
+    align-self: flex-start;
+}
+
+.message.user {
+    background: #005bb5;
+    align-self: flex-end;
 }
