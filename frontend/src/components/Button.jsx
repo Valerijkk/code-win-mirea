@@ -21,8 +21,8 @@ const Button = ({ text, help, image, index, isActive, toggleState }) => {
             </div>
 
             {isHovered && (
-                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2">
-                    <div className="bg-black text-white p-2 rounded">
+                <div class="absolute bottom-full left-1/2 transform -translate-x-1/2">
+                    <div class="bg-black text-white p-2 rounded">
                         {help}
                     </div>
                 </div>

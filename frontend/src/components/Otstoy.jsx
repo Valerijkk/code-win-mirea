@@ -14,8 +14,8 @@ const Otstoy = ({ help, image, onClick }) => {
             </div>
 
             {isHovered && (
-                <div className="absolute left-full top-1/2 transform -translate-y-1/2 -ml-2">
-                    <div className="bg-black text-white p-2 rounded">
+                <div class="absolute left-full top-1/2 transform -translate-y-1/2 -ml-2">
+                    <div class="bg-black text-white p-2 rounded">
                         {help}
                     </div>
                 </div>
