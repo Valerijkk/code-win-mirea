@@ -13,19 +13,19 @@ HF_TOKEN = os.getenv("HUGGINGFACE_TOKEN")
 if not HF_TOKEN:
     raise RuntimeError("Не найден HUGGINGFACE_TOKEN в окружении")
 
-MODEL   = os.getenv("MUSIC_MODEL")
+MODEL   = os.getenv("IMAGE_MODEL")
 API_URL = f"https://api-inference.huggingface.co/models/{MODEL}"
 HEADERS = {"Authorization": f"Bearer {HF_TOKEN}"}
 
 # Debug-логи
-print("🚀 DEBUG music.py:", __file__, file=sys.stderr)
+print("🚀 DEBUG image.py:", __file__, file=sys.stderr)
 print("   API_URL =", API_URL, file=sys.stderr)
 print("   HEADERS =", HEADERS, file=sys.stderr)
 
-@router.post("/music")
-async def gen_music(req: Req):
+@router.post("/image")
+async def gen_image(req: Req):
     prompt = (
-            "Сочините меланхоличную музыкальную тему на основе этого дневникового фрагмента:\n\n"
+            "Создайте иллюстрацию в стиле военного альбома на основе этого фрагмента дневника:\n\n"
             + req.text
     )
     payload = {"inputs": prompt}
@@ -34,4 +34,4 @@ async def gen_music(req: Req):
     if resp.status_code != 200:
         raise HTTPException(status_code=resp.status_code, detail=resp.text)
     b64 = base64.b64encode(resp.content).decode("utf-8")
-    return {"audio": b64}
+    return {"image": b64}

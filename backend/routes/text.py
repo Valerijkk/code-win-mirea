@@ -1,7 +1,6 @@
 import os
 import sys
 import httpx
-import base64
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
@@ -13,25 +12,28 @@ HF_TOKEN = os.getenv("HUGGINGFACE_TOKEN")
 if not HF_TOKEN:
     raise RuntimeError("Не найден HUGGINGFACE_TOKEN в окружении")
 
-MODEL   = os.getenv("MUSIC_MODEL")
+MODEL   = os.getenv("TEXT_MODEL")
 API_URL = f"https://api-inference.huggingface.co/models/{MODEL}"
 HEADERS = {"Authorization": f"Bearer {HF_TOKEN}"}
 
 # Debug-логи
-print("🚀 DEBUG music.py:", __file__, file=sys.stderr)
+print("🚀 DEBUG text.py:", __file__, file=sys.stderr)
 print("   API_URL =", API_URL, file=sys.stderr)
 print("   HEADERS =", HEADERS, file=sys.stderr)
 
-@router.post("/music")
-async def gen_music(req: Req):
+@router.post("/text")
+async def gen_text(req: Req):
     prompt = (
-            "Сочините меланхоличную музыкальную тему на основе этого дневникового фрагмента:\n\n"
+            "На основе этого фрагмента дневника военных лет, "
+            "создайте художественный текст, сохраняя эмоциональную насыщенность:\n\n"
             + req.text
     )
-    payload = {"inputs": prompt}
+    payload = {"inputs": prompt, "parameters": {"max_new_tokens": 200}}
     async with httpx.AsyncClient(timeout=120.0) as client:
         resp = await client.post(API_URL, headers=HEADERS, json=payload)
     if resp.status_code != 200:
         raise HTTPException(status_code=resp.status_code, detail=resp.text)
-    b64 = base64.b64encode(resp.content).decode("utf-8")
-    return {"audio": b64}
+    data = resp.json()
+    # GPT2 может вернуть список
+    text = data[0].get("generated_text") if isinstance(data, list) else data.get("generated_text", "")
+    return {"text": text}

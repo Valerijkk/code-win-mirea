@@ -1,54 +1,55 @@
-import os
-import re
-import logging
-
+import os, re, logging, httpx
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-import httpx
 
-logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
-
 router = APIRouter()
 
 class GenerateRequest(BaseModel):
     prompt: str
 
-OLLAMA_URL   = os.getenv("OLLAMA_URL", "http://127.0.0.1:11436/api/generate")
-OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "deepseek-r1:1.5b")
+# подтягиваем из окружения
+OLLAMA_URL   = os.getenv("OLLAMA_URL")
+OLLAMA_MODEL = os.getenv("OLLAMA_MODEL")
+
+# (Опционально) для OpenAI
+OPENAI_KEY   = os.getenv("OPENAI_API_KEY")
+OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-3.5-turbo")
 
 @router.post("/generate")
 async def generate(req: GenerateRequest):
+    # === Вариант A: отправляем в Ollama ===
     payload = {"model": OLLAMA_MODEL, "prompt": req.prompt, "stream": False}
+    url = OLLAMA_URL
+
+    # === Вариант B: вместо этого раскомментируйте и закомментируйте блок A ===
+    # import openai
+    # openai.api_key = OPENAI_KEY
+    # response = openai.ChatCompletion.create(
+    #     model=OPENAI_MODEL,
+    #     messages=[{"role": "user", "content": req.prompt}],
+    # )
+    # text = response.choices[0].message.content
+
     try:
-        logger.debug("→ Sending to Ollama: %s", payload)
         async with httpx.AsyncClient(timeout=30.0, trust_env=False) as client:
-            resp = await client.post(OLLAMA_URL, json=payload)
-
-        logger.debug("← Ollama responded [%d]: %s", resp.status_code, resp.text)
+            resp = await client.post(url, json=payload)
         resp.raise_for_status()
-
         data = resp.json()
-        # raw-ответ от модели
-        raw = ""
-        if "response" in data:
-            raw = data["response"]
-        else:
-            choice = data.get("choices", [{}])[0]
-            raw = choice.get("text") or choice.get("delta", {}).get("content") or ""
 
-        # разбираем <think>…</think>
+        raw = data.get("response") or data.get("choices", [{}])[0].get("text", "")
+        # опциональный парсинг «мыслей» <think>
         m = re.search(r"<think>(.*?)</think>(.*)", raw, re.DOTALL)
-        think_text = m.group(1).strip() if m else None
-        reply_text = m.group(2).strip() if m else raw.strip()
+        think = m.group(1).strip() if m else None
+        reply = (m.group(2).strip() if m else raw.strip())
 
-        result = {"response": reply_text}
-        if think_text:
-            result["think"] = think_text
-        return result
+        out = {"response": reply}
+        if think:
+            out["think"] = think
+        return out
 
     except httpx.HTTPStatusError as e:
-        logger.error("Ollama HTTP error", exc_info=e)
+        logger.error("HTTP error from backend", exc_info=e)
         raise HTTPException(status_code=e.response.status_code, detail=e.response.text)
     except Exception as e:
         logger.exception("Internal error")

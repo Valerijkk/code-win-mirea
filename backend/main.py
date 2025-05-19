@@ -1,27 +1,22 @@
 import os
-import logging
-
+import sys
+from pathlib import Path
+from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from dotenv import load_dotenv
 
-# Включаем DEBUG-логи
-logging.basicConfig(level=logging.DEBUG)
-logger = logging.getLogger(__name__)
+# Явно грузим .env из текущей папки
+load_dotenv(dotenv_path=Path(__file__).parent / ".env")
 
-# Загружаем переменные из файла backend/.env
-load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), ".env"))
+# После загрузки .env, можно импортировать роуты
+from routes.emotion import router as emotion_router
+from routes.text    import router as text_router
+from routes.image   import router as image_router
+from routes.music   import router as music_router
 
-# Импортируем роутер для /api/generate
-from routes.generate import router as generate_router
+app = FastAPI(title="WarDiaryAI", version="1.0")
 
-app = FastAPI(
-    title="Ollama FastAPI Backend",
-    description="Proxy для модели deepseek-r1:1.5b",
-    version="1.0.0",
-)
-
-# Разрешаем CORS для любого фронтенда (для простоты)
+# Разрешаем CORS для всех (для DEV)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -29,5 +24,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Включаем маршруты из generate.py под префиксом /api
-app.include_router(generate_router, prefix="/api")
+# Регистрируем роуты
+app.include_router(emotion_router, prefix="/api")
+app.include_router(text_router,    prefix="/api")
+app.include_router(image_router,   prefix="/api")
+app.include_router(music_router,   prefix="/api")
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

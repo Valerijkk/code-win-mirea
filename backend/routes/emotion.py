@@ -1,7 +1,6 @@
 import os
 import sys
 import httpx
-import base64
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
@@ -9,29 +8,24 @@ router = APIRouter()
 class Req(BaseModel):
     text: str
 
+# Читаем переменные окружения
 HF_TOKEN = os.getenv("HUGGINGFACE_TOKEN")
 if not HF_TOKEN:
     raise RuntimeError("Не найден HUGGINGFACE_TOKEN в окружении")
 
-MODEL   = os.getenv("MUSIC_MODEL")
+MODEL   = os.getenv("EMOTION_MODEL")
 API_URL = f"https://api-inference.huggingface.co/models/{MODEL}"
 HEADERS = {"Authorization": f"Bearer {HF_TOKEN}"}
 
 # Debug-логи
-print("🚀 DEBUG music.py:", __file__, file=sys.stderr)
+print("🚀 DEBUG emotion.py:", __file__, file=sys.stderr)
 print("   API_URL =", API_URL, file=sys.stderr)
 print("   HEADERS =", HEADERS, file=sys.stderr)
 
-@router.post("/music")
-async def gen_music(req: Req):
-    prompt = (
-            "Сочините меланхоличную музыкальную тему на основе этого дневникового фрагмента:\n\n"
-            + req.text
-    )
-    payload = {"inputs": prompt}
-    async with httpx.AsyncClient(timeout=120.0) as client:
-        resp = await client.post(API_URL, headers=HEADERS, json=payload)
+@router.post("/emotion")
+async def emotion(req: Req):
+    async with httpx.AsyncClient(timeout=60.0) as client:
+        resp = await client.post(API_URL, headers=HEADERS, json={"inputs": req.text})
     if resp.status_code != 200:
         raise HTTPException(status_code=resp.status_code, detail=resp.text)
-    b64 = base64.b64encode(resp.content).decode("utf-8")
-    return {"audio": b64}
+    return {"analysis": resp.json()}
