@@ -16,7 +16,6 @@ export default function App() {
     const toggleSideBar = () => {
         setIsWindowVisible(!isWindowVisible);
     };
-
     // автоскролл вниз
     useEffect(() => {
         bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
