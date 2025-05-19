@@ -1,39 +1,42 @@
+# routes/text.py
 import os
-import sys
-import httpx
+import requests
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
 router = APIRouter()
-class Req(BaseModel):
+
+class TextRequest(BaseModel):
     text: str
 
-HF_TOKEN = os.getenv("HUGGINGFACE_TOKEN")
-if not HF_TOKEN:
-    raise RuntimeError("Не найден HUGGINGFACE_TOKEN в окружении")
-
-MODEL   = os.getenv("TEXT_MODEL")
-API_URL = f"https://api-inference.huggingface.co/models/{MODEL}"
-HEADERS = {"Authorization": f"Bearer {HF_TOKEN}"}
-
-# Debug-логи
-print("🚀 DEBUG text.py:", __file__, file=sys.stderr)
-print("   API_URL =", API_URL, file=sys.stderr)
-print("   HEADERS =", HEADERS, file=sys.stderr)
-
 @router.post("/text")
-async def gen_text(req: Req):
-    prompt = (
-            "На основе этого фрагмента дневника военных лет, "
-            "создайте художественный текст, сохраняя эмоциональную насыщенность:\n\n"
-            + req.text
+async def generate_text(req: TextRequest):
+    ollama_host = os.getenv("OLLAMA_HOST", "http://127.0.0.1:11434")
+    model_name  = "qwen3:30b"
+
+    # Русский системный промпт для писателя
+    system_prompt = (
+        "Вы — творческий писатель. "
+        "Сгенерируйте художественный текст на основе этого фрагмента дневника военного времени, "
+        "сохранив его эмоциональную глубину и исторический контекст."
     )
-    payload = {"inputs": prompt, "parameters": {"max_new_tokens": 200}}
-    async with httpx.AsyncClient(timeout=120.0) as client:
-        resp = await client.post(API_URL, headers=HEADERS, json=payload)
-    if resp.status_code != 200:
-        raise HTTPException(status_code=resp.status_code, detail=resp.text)
-    data = resp.json()
-    # GPT2 может вернуть список
-    text = data[0].get("generated_text") if isinstance(data, list) else data.get("generated_text", "")
-    return {"text": text}
+
+    payload = {
+        "model":    model_name,
+        "stream":   False,
+        "messages": [
+            {"role": "system", "content": system_prompt},
+            {"role": "user",   "content": req.text}
+        ]
+    }
+
+    try:
+        resp = requests.post(f"{ollama_host}/api/chat", json=payload)
+        resp.raise_for_status()
+        data = resp.json()
+        content = data.get("message", {}).get("content")
+        if content is None:
+            raise ValueError(f"Непредвиденная структура ответа: {data!r}")
+        return {"response": content}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Ollama error: {e}")
