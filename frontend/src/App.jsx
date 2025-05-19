@@ -86,7 +86,7 @@ export default function App() {
                     </div>
 
                     <div class="h-1/17 w-5/9 flex justify-center">
-                        <button class="w-13/16 bg-blue-600 rounded-2xl flex flex-col justify-center">  {/* новый чат */}
+                        <button class="w-13/16 bg-blue-600 hover:bg-blue-700 rounded-2xl flex flex-col justify-center">  {/* новый чат */}
                             <div class="h-1/2 flex justify-center">
                                 <image class="w-1/5 bg-white">
 
@@ -104,14 +104,16 @@ export default function App() {
 
                     <div class="h-1/12 w-full flex flex-col justify-center"> {/* профиль */}
                         <div class="h-1/2 flex justify-center">
-                            <div class="w-1/8 rounded-full">
-                                <image class="text-neutral-300 sm:text-base md:text-lg lg:text-xl xl:text-2xl 2xl:text-3xl">
-                                    ☻
-                                </image>
-                            </div>
+                            <div class="w-7/8 flex justify-start hover:bg-neutral-800 rounded-lg">
+                                <div class="w-1/8 rounded-full">
+                                    <image class="text-neutral-300 sm:text-base md:text-lg lg:text-xl xl:text-2xl 2xl:text-3xl">
+                                        ☻
+                                    </image>
+                                </div>
 
-                            <div class="pl-2 pt-2 w-17/24 sm:text-xs md:text-xs lg:text-xs xl:text-xs 2xl:text-sm">
-                                Мой профиль
+                                <div class="pl-2 pt-2 w-17/24 sm:text-xs md:text-xs lg:text-xs xl:text-xs 2xl:text-sm">
+                                    Мой профиль
+                                </div>
                             </div>
                         </div>
                     </div>
