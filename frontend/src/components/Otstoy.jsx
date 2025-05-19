@@ -4,10 +4,10 @@ const Otstoy = ({ help, image, onClick }) => {
     const [isHovered, setIsHovered] = useState(false);
 
     return (
-        <div class="relative w-2/11 flex flex-col justify-center" onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
+        <div class="relative w-2/11 flex flex-col justify-center xl:text-xs 2xl:text-sm" onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
             <div class="h-1/3 w-full flex justify-center">
                 <button class="w-5/8" onClick={onClick}>
-                    <image class="text-neutral-300 text-3xl rotate-180" src={image}>
+                    <image class="text-neutral-300 ms:text-base md:text-lg lg:text-xl xl:text-2xl 2xl:text-3xl rotate-180" src={image}>
                         {image}
                     </image>
                 </button>

@@ -72,12 +72,12 @@ export default function App() {
     };
 
     return (
-        <div class="w-screen h-screen bg-neutral-800 flex">
+        <div class="w-screen h-screen bg-neutral-800 flex lg:text-xs xl:text-sm 2xl:text-base">
             {isWindowVisible &&  (
                 <div class="w-3/19 h-screen bg-neutral-900 flex flex-col justify-between text-neutral-400 font-semibold"> {/* развёрнутое боковое меню */}
                     <div class="h-1/9 w-full flex justify-between">
                         <div class="w-6/9 flex flex-col justify-center"> {/* название */}
-                            <div class="h-1/2 w-full text-center text-3xl">
+                            <div class="h-1/2 w-full text-center ms:text-base md:text-lg lg:text-xl xl:text-2xl 2xl:text-3xl">
                                 китёнок
                             </div>
                         </div>
@@ -91,7 +91,7 @@ export default function App() {
                                 <image class="w-1/5 bg-white">
 
                                 </image>
-                                <div class="pt-1 w-13/20 text-white text-sm text-right">
+                                <div class="pt-1 w-13/20 text-white xl:text-xs 2xl:text-sm text-right">
                                     Новый чат
                                 </div>
                             </div>
@@ -105,12 +105,12 @@ export default function App() {
                     <div class="h-1/12 w-full flex flex-col justify-center"> {/* профиль */}
                         <div class="h-1/2 flex justify-center">
                             <div class="w-1/8 rounded-full">
-                                <image class="text-neutral-300 text-3xl">
+                                <image class="text-neutral-300 ms:text-base md:text-lg lg:text-xl xl:text-2xl 2xl:text-3xl">
                                     ☻
                                 </image>
                             </div>
 
-                            <div class="pl-2 pt-2 w-17/24 text-sm">
+                            <div class="pl-2 pt-2 w-17/24 xl:text-xs 2xl:text-sm">
                                 Мой профиль
                             </div>
                         </div>
@@ -123,7 +123,7 @@ export default function App() {
                     <div class="h-1/2"> {/* вверхняя часть */}
                         <div class="h-1/6 flex justify-center"> {/* лого */}
                             <div class="w-2/3 flex flex-col justify-center">
-                                <button class="h-1/2 text-center text-4xl">
+                                <button class="h-1/2 text-center ms:text-lg md:text-xl lg:text-2xl xl:text-3xl 2xl:text-4xl">
                                     <image>
                                         🐋 {/* кит, просто кит, думает, что крутой, но на деле всё совсем не так, это я его сюда засунул, я для него бог, если захочу, то его тут не будет, но он мили, так что я его пока что оставлю, но не дай бог он что-либо натворит */}
                                     </image>
@@ -183,7 +183,7 @@ export default function App() {
                                         </div>
 
                                         <div class="w-2/20 flex justify-end"> {/* правая часть */}
-                                            <button class="w-2/5 h-full bg-neutral-500 rounded-full text-center text-2xl leading-1 text-neutral-700" type="submit" disabled={loading || !input.trim()}> {/* отправить запрос */}
+                                            <button class="w-2/5 h-full bg-neutral-500 rounded-full text-center ms:text-sm md:text-base lg:text-lg xl:text-xl 2xl:text-2xl leading-1 text-neutral-700" type="submit" disabled={loading || !input.trim()}> {/* отправить запрос */}
                                                 {loading ? '…' : '↑'} {/* в массиве buttonsState хранятся данные, какие опции выбраны */}
                                             </button>
                                         </div>
