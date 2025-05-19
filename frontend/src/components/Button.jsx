@@ -12,7 +12,7 @@ const Button = ({ text, help, image, index, isActive, toggleState }) => {
             <div class="sm:mx-1 md:mx-1 lg:mx-1 xl:mx-2 2xl:mx-2 flex">
                 <div class="flex flex-col justify-center">
                     <image class="h-3/4 sm:w-1 md:w-2 lg:w-3 xl:w-4 2xl:w-5 bg-white"> {/* src={`${image}`} posle vstavki kartinki uberite "w-5" i postavte norm sootnoshenie */}
-                        
+
                     </image>
                 </div>
                 <div class="ml-2">

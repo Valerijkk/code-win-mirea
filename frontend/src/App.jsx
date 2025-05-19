@@ -1,22 +1,23 @@
+// src/App.js
 import React, { useState, useEffect, useRef } from 'react';
 import './App.css';
 import Button from './components/Button';
-import Image from './components/Image';
+import ImageBtn from './components/Image';
 import Otstoy from './components/Otstoy';
 
 export default function App() {
-    const [messages, setMessages] = useState([]); // { role, text }
-    const [input, setInput]       = useState('');
-    const [loading, setLoading]   = useState(false);
-    const bottomRef = useRef(null);
+    const [messages, setMessages]         = useState([]); // { role, type, content }
+    const [input, setInput]               = useState('');
+    const [loading, setLoading]           = useState(false);
     const [buttonsState, setButtonsState] = useState([false, false, false, false]);
+    const bottomRef                       = useRef(null);
     const [isWindowVisible, setIsWindowVisible] = useState(false);
 
     const toggleSideBar = () => {
         setIsWindowVisible(!isWindowVisible);
     };
 
-    // автоскролл
+    // автоскролл вниз
     useEffect(() => {
         bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages]);
@@ -27,43 +28,83 @@ export default function App() {
             newState[index] = !newState[index];
             return newState;
         });
+    const toggleSideBar = () => {
+        setIsWindowVisible(v => !v);
+    };
+
+    const toggleButtonState = index => {
+        setButtonsState(bs =>
+            bs.map((b, i) => (i === index ? !b : b))
+        );
     };
 
     const sendMessage = async e => {
         e.preventDefault();
         if (!input.trim()) return;
+        if (buttonsState.every(b => !b)) return;  // ни одной кнопки не выбрано
 
-        // 1) своё сообщение
-        setMessages(ms => [...ms, { role: 'user', text: input }]);
+        // пушим своё сообщение
+        setMessages(ms => [
+            ...ms,
+            { role: 'user', type: 'text', content: input }
+        ]);
         setLoading(true);
 
+        // определяем режим и эндпоинт
+        const idx = buttonsState.findIndex(b => b);
+        let endpoint, payload;
+        switch (idx) {
+            case 0:
+                endpoint = '/api/emotion';
+                payload = { text: input };
+                break;
+            case 1:
+                endpoint = '/api/text';
+                payload = { text: input };
+                break;
+            case 2:
+                endpoint = '/api/generate';
+                payload = { prompt: input };
+                break;
+            case 3:
+                endpoint = '/api/music';
+                payload = { prompt: input };
+                break;
+            default:
+                endpoint = '/api/generate';
+                payload = { prompt: input };
+        }
+
         try {
-            // 2) POST /api/generate
-            const res = await fetch('/api/generate', {
+            const res = await fetch(endpoint, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ prompt: input }),
+                body: JSON.stringify(payload),
             });
             const data = await res.json();
-            console.log('Получили с сервера:', data);
 
-            // 3) если есть think → сначала добавляем «мысль»
-            if (data.think) {
-                setMessages(ms => [
-                    ...ms,
-                    { role: 'bot-think', text: data.think }
-                ]);
+            if (!res.ok) {
+                throw new Error(data.detail || JSON.stringify(data));
             }
 
-            // 4) потом ответ
-            setMessages(ms => [
-                ...ms,
-                { role: 'bot', text: data.response }
-            ]);
+            const resp = data.response;
+            let botMsg;
+            if (idx === 2) {
+                // изображение
+                botMsg = { role: 'bot', type: 'image', content: resp };
+            } else if (idx === 3) {
+                // музыка (URL или base64)
+                botMsg = { role: 'bot', type: 'audio', content: resp };
+            } else {
+                // текст или эмоции
+                botMsg = { role: 'bot', type: 'text', content: resp };
+            }
+
+            setMessages(ms => [...ms, botMsg]);
         } catch (err) {
             setMessages(ms => [
                 ...ms,
-                { role: 'bot', text: `Сетевая ошибка: ${err.message}` }
+                { role: 'bot', type: 'text', content: `Ошибка: ${err.message}` }
             ]);
         } finally {
             setInput('');
@@ -81,10 +122,13 @@ export default function App() {
                                 китёнок
                             </div>
                         </div>
+    // проверка, что хотя бы один режим выбран
+    const isSendDisabled = loading || !input.trim() || buttonsState.every(b => !b);
 
                         <Otstoy help="свернуть меню" image="➤" onClick={toggleSideBar}/> {/* свёртование */}
                     </div>
 
+<<<<<<< HEAD
                     <div class="h-1/17 w-5/9 flex justify-center">
                         <button class="w-13/16 bg-blue-600 hover:bg-blue-700 rounded-2xl flex flex-col justify-center">  {/* новый чат */}
                             <div class="h-1/2 flex justify-center">
@@ -153,25 +197,27 @@ export default function App() {
                     </div>
 
                     <div class="h-21/28"> {/* чат */} 
+=======
+                    {/* Чат */}
+                    <div className="h-21/28 overflow-y-auto p-4 flex flex-col">
+>>>>>>> 46b9a936fa9f1d7106fb37c9c2d03cdc64cc1675
                         {messages.map((m, i) => (
                             <div key={i} className={`message ${m.role}`}>
-                                {m.text}
+                                {m.type === 'image' ? (
+                                    <img
+                                        src={`data:image/png;base64,${m.content}`}
+                                        alt="generated"
+                                        className="max-w-full rounded"
+                                    />
+                                ) : m.type === 'audio' ? (
+                                    <audio controls src={m.content} className="w-full" />
+                                ) : (
+                                    <pre className="whitespace-pre-wrap">{m.content}</pre>
+                                )}
                             </div>
                         ))}
-                        <div ref={bottomRef}/>
+                        <div ref={bottomRef} />
                     </div>
-
-                    <div class="h-5/28 flex flex-col justify-center"> {/* окно ввода и остального */}
-                        <div class="h-5/8 bg-neutral-700 rounded-3xl flex justify-center">
-                            <div class="w-27/28 flex flex-col justify-center">
-                                <form class="h-22/28 flex flex-col justify-between" onSubmit={sendMessage}>
-                                    <input class="w-full h-1/3 text-neutral-200" // окно ввода
-                                        type="text"
-                                        placeholder="Напишите сообщение..."
-                                        value={input}
-                                        onChange={e => setInput(e.target.value)}
-                                        disabled={loading}
-                                    />
 
                                     <div class="h-1/3 flex justify-between"> {/* опции */}
                                         <div class="w-18/20"> {/* левая часть */} 
@@ -183,16 +229,58 @@ export default function App() {
 
                                             <Button text="музыка" help="напишет песню по введёному" image="" index={3} isActive={buttonsState[3]} toggleState={toggleButtonState}/> {/* генерация музыки */}
                                         </div>
+                    {/* Панель ввода */}
+                    <div className="h-5/28 flex items-center justify-center">
+                        <form className="w-full flex flex-col" onSubmit={sendMessage}>
+                            <input
+                                className="w-full p-2 rounded-2xl mb-2 bg-neutral-700 text-neutral-200"
+                                type="text"
+                                placeholder="Напишите сообщение..."
+                                value={input}
+                                onChange={e => setInput(e.target.value)}
+                                disabled={loading}
+                            />
 
-                                        <div class="w-2/20 flex justify-end"> {/* правая часть */}
-                                            <button class="w-2/5 h-full bg-neutral-500 rounded-full text-center sm:text-sm md:text-base lg:text-lg xl:text-xl 2xl:text-2xl leading-1 text-neutral-700" type="submit" disabled={loading || !input.trim()}> {/* отправить запрос */}
-                                                {loading ? '…' : '↑'} {/* в массиве buttonsState хранятся данные, какие опции выбраны */}
-                                            </button>
-                                        </div>
-                                    </div>
-                                </form>
+                            <div className="flex items-center">
+                                <div className="flex space-x-2 flex-1">
+                                    <Button
+                                        text="анализ"
+                                        help="эмоциональный анализ"
+                                        index={0}
+                                        isActive={buttonsState[0]}
+                                        toggleState={toggleButtonState}
+                                    />
+                                    <Button
+                                        text="текст"
+                                        help="сгенерировать текст"
+                                        index={1}
+                                        isActive={buttonsState[1]}
+                                        toggleState={toggleButtonState}
+                                    />
+                                    <Button
+                                        text="изобр."
+                                        help="сгенерировать изображение"
+                                        index={2}
+                                        isActive={buttonsState[2]}
+                                        toggleState={toggleButtonState}
+                                    />
+                                    <Button
+                                        text="музыка"
+                                        help="сгенерировать музыку"
+                                        index={3}
+                                        isActive={buttonsState[3]}
+                                        toggleState={toggleButtonState}
+                                    />
+                                </div>
+                                <button
+                                    className="ml-2 w-12 h-12 bg-blue-600 rounded-full disabled:opacity-50 flex items-center justify-center"
+                                    type="submit"
+                                    disabled={isSendDisabled}
+                                >
+                                    {loading ? '…' : '→'}
+                                </button>
                             </div>
-                        </div>
+                        </form>
                     </div>
                 </div>
             </div>
