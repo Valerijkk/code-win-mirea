@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './App.css';
 import Button from './components/Button';
-import Image from './components/Image';
+import ImageBtn from './components/Image';
 import Otstoy from './components/Otstoy';
 
 export default function App() {
@@ -14,19 +14,17 @@ export default function App() {
     const [isWindowVisible, setIsWindowVisible] = useState(false);
 
     const toggleSideBar = () => {
-        setIsWindowVisible(!isWindowVisible);
+        setIsWindowVisible(v => !v);
     };
     // автоскролл вниз
     useEffect(() => {
         bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages]);
 
-    const toggleButtonState = (index) => {
-        setButtonsState((prevState) => {
-            const newState = [...prevState];
-            newState[index] = !newState[index];
-            return newState;
-        });
+    const toggleButtonState = index => {
+        setButtonsState(bs =>
+            bs.map((b, i) => (i === index ? !b : b))
+        );
     };
 
     const sendMessage = async e => {
@@ -166,13 +164,13 @@ export default function App() {
                             </div>
                         </div>
 
-                        <Image help="развернуть меню" image="➤" onClick={toggleSideBar}/> {/* развёртывание */}
+                        <ImageBtn help="развернуть меню" image="➤" onClick={toggleSideBar}/> {/* развёртывание */}
 
                         {/*<Image help="добавить чат" image=""/> {/* добавление чата */}
                     </div>
 
                     <div class="h-1/2 flex flex-col justify-end"> {/* нижняя часть */}
-                        <Image help="открыть профиль" image="☻"/> {/* аккаунт и всё такое */}
+                        <ImageBtn help="открыть профиль" image="☻"/> {/* аккаунт и всё такое */}
                     </div>
                 </div>
             )}
@@ -185,19 +183,19 @@ export default function App() {
                         </div>
                     </div>
 
-                    <div class="h-21/28"> {/* чат */} 
+                    <div className="h-21/28 overflow-y-auto p-4 flex flex-col"> {/* чат */}
                         {messages.map((m, i) => (
-                            <div key={i} class={`message ${m.role}`}>
+                            <div key={i} className={`message ${m.role}`}>
                                 {m.type === 'image' ? (
                                     <img
                                         src={`data:image/png;base64,${m.content}`}
                                         alt="generated"
-                                        class="max-w-full rounded"
+                                        className="max-w-full rounded"
                                     />
                                 ) : m.type === 'audio' ? (
-                                    <audio controls src={m.content} class="w-full" />
+                                    <audio controls src={m.content} className="w-full" />
                                 ) : (
-                                    <pre class="whitespace-pre-wrap">{m.content}</pre>
+                                    <pre className="whitespace-pre-wrap">{m.content}</pre>
                                 )}
                             </div>
                         ))}
