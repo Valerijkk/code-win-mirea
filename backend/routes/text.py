@@ -1,42 +1,34 @@
-# routes/text.py
-import os
-import requests
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
+from backend.utils.ollama import ollama_chat
 
 router = APIRouter()
 
 class TextRequest(BaseModel):
-    text: str
+    diary_fragment: str
+    emotion_profile: dict | None = None
 
-@router.post("/text")
+class TextResponse(BaseModel):
+    story: str
+
+SYSTEM_PROMPT = (
+    "Вы — военный писатель-художник. "
+    "Правила:\n"
+    "1. Не искажайте фактов дневника.\n"
+    "2. Сохраняйте эмоции (пришлю JSON).\n"
+    "3. Абзацы ≤120 симв. Язык — литературный.\n"
+    "4. Никаких призывов к ненависти.\n"
+    "Ответ только художественный текст."
+)
+
+@router.post("/text", response_model=TextResponse)
 async def generate_text(req: TextRequest):
-    ollama_host = os.getenv("OLLAMA_HOST", "http://127.0.0.1:11434")
-    model_name  = "qwen3:30b"
-
-    # Русский системный промпт для писателя
-    system_prompt = (
-        "Вы — творческий писатель. "
-        "Сгенерируйте художественный текст на основе этого фрагмента дневника военного времени, "
-        "сохранив его эмоциональную глубину и исторический контекст."
-    )
-
-    payload = {
-        "model":    model_name,
-        "stream":   False,
-        "messages": [
-            {"role": "system", "content": system_prompt},
-            {"role": "user",   "content": req.text}
-        ]
-    }
-
     try:
-        resp = requests.post(f"{ollama_host}/api/chat", json=payload)
-        resp.raise_for_status()
-        data = resp.json()
-        content = data.get("message", {}).get("content")
-        if content is None:
-            raise ValueError(f"Непредвиденная структура ответа: {data!r}")
-        return {"response": content}
+        extra = f"\n\nЭмоции: {req.emotion_profile}" if req.emotion_profile else ""
+        story = ollama_chat([
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "user",   "content": req.diary_fragment + extra}
+        ])
+        return {"story": story.strip()}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Ollama error: {e}")
+        raise HTTPException(500, str(e))
