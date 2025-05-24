@@ -266,7 +266,7 @@ export default function App() {
                         <Button text="картинка"   index={2} isActive={btn[2]} toggleState={toggle}/>
                         <Button text="музыка"    index={3} isActive={btn[3]} toggleState={toggle}/>
                         <button className="send" disabled={disabled}>
-                            {loading ? '…' : '➤'}
+                            {loading ? '...' : '➤'}
                         </button>
                     </div>
                 </form>
