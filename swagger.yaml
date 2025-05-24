@@ -1,0 +1,337 @@
+openapi: 3.0.3
+info:
+  title: WarDiaryAI API
+  version: "2.2"
+  description: >
+    Backend для MVP «Искусство через призму военных лет».  
+    Пользовательский чат с генерацией эмоций, текста, изображений и музыки.
+servers:
+  - url: http://localhost:8000
+paths:
+  /api/user:
+    post:
+      summary: Зарегистрировать нового пользователя
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUser'
+      responses:
+        '200':
+          description: Успех
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateUserResponse'
+
+  /api/chats:
+    get:
+      summary: Получить список чатов текущего пользователя
+      parameters:
+        - in: header
+          name: X-User-Id
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Список чатов
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ChatItem'
+    post:
+      summary: Создать новый чат
+      parameters:
+        - in: header
+          name: X-User-Id
+          schema:
+            type: string
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewChat'
+      responses:
+        '200':
+          description: Новый чат создан
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NewChatResponse'
+
+  /api/chats/{chat_id}/messages:
+    get:
+      summary: Загрузить сообщения чата
+      parameters:
+        - in: header
+          name: X-User-Id
+          schema:
+            type: string
+          required: true
+        - in: path
+          name: chat_id
+          schema:
+            type: integer
+          required: true
+      responses:
+        '200':
+          description: Сообщения чата
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MessageItem'
+    post:
+      summary: Сохранить новое сообщение
+      parameters:
+        - in: header
+          name: X-User-Id
+          schema:
+            type: string
+          required: true
+        - in: path
+          name: chat_id
+          schema:
+            type: integer
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SaveMsg'
+      responses:
+        '200':
+          description: Успешно сохранено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OKResponse'
+
+  /api/emotion:
+    post:
+      summary: Эмоциональный анализ текста
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmotionRequest'
+      responses:
+        '200':
+          description: Профиль эмоций
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmotionResponse'
+
+  /api/text:
+    post:
+      summary: Сгенерировать художественный текст
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TextRequest'
+      responses:
+        '200':
+          description: Сгенерированный рассказ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TextResponse'
+
+  /api/generate:
+    post:
+      summary: Сгенерировать изображение
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ImageRequest'
+      responses:
+        '200':
+          description: Base64-код картинки
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImageResponse'
+
+  /api/music:
+    post:
+      summary: Сгенерировать музыку
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MusicRequest'
+      responses:
+        '200':
+          description: Base64-код аудиофайла
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MusicResponse'
+
+components:
+  schemas:
+    CreateUser:
+      type: object
+      properties:
+        name:
+          type: string
+          example: Ivan
+      required: [name]
+
+    CreateUserResponse:
+      type: object
+      properties:
+        userId:
+          type: string
+          example: "d290f1ee-6c54-4b01-90e6-d701748f0851"
+
+    ChatItem:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        created:
+          type: string
+          format: date-time
+
+    NewChat:
+      type: object
+      properties:
+        title:
+          type: string
+      example:
+        title: "Мой новый чат"
+
+    NewChatResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+
+    SaveMsg:
+      type: object
+      properties:
+        role:
+          type: string
+          enum: [user, bot]
+        mtype:
+          type: string
+          enum: [text, image, audio]
+        content:
+          type: string
+      required: [role, mtype, content]
+
+    OKResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+          example: true
+
+    MessageItem:
+      type: object
+      properties:
+        role:
+          type: string
+        type:
+          type: string
+        content:
+          type: string
+
+    EmotionRequest:
+      type: object
+      properties:
+        text:
+          type: string
+      required: [text]
+
+    EmotionProfileItem:
+      type: object
+      properties:
+        percent:
+          type: number
+        fraction:
+          type: number
+        label:
+          type: string
+
+    EmotionResponse:
+      type: object
+      properties:
+        profile:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/EmotionProfileItem'
+        dominant:
+          type: string
+
+    TextRequest:
+      type: object
+      properties:
+        diary_fragment:
+          type: string
+        emotion_profile:
+          type: object
+          nullable: true
+      required: [diary_fragment]
+
+    TextResponse:
+      type: object
+      properties:
+        story:
+          type: string
+
+    ImageRequest:
+      type: object
+      properties:
+        prompt:
+          type: string
+      required: [prompt]
+
+    ImageResponse:
+      type: object
+      properties:
+        response:
+          type: string
+          description: Base64 PNG
+
+    MusicRequest:
+      type: object
+      properties:
+        prompt:
+          type: string
+        seconds:
+          type: integer
+          description: Длительность 5–30 сек.
+        instrumental:
+          type: boolean
+        model:
+          type: string
+          description: V3_5, V4 или V4_5
+      required: [prompt]
+
+    MusicResponse:
+      type: object
+      properties:
+        response:
+          type: string
+          description: Base64 MP3/WAV

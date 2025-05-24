@@ -8,7 +8,7 @@ def ollama_chat(messages: List[Dict], model: str | None = None) -> str:
     resp = requests.post(
         f"{OLLAMA_HOST}/api/chat",
         json={"model": model or OLLAMA_MODEL, "stream": False, "messages": messages},
-        timeout=120,
+        timeout=600,
     )
     resp.raise_for_status()
     data = resp.json()
