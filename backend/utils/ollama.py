@@ -2,7 +2,7 @@ import os, requests
 from typing import List, Dict
 
 OLLAMA_HOST  = os.getenv("OLLAMA_HOST", "http://127.0.0.1:11434")
-OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "qwen3:14b")
+OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "qwen3:30b")
 
 def ollama_chat(messages: List[Dict], model: str | None = None) -> str:
     resp = requests.post(
