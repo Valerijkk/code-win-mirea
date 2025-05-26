@@ -2,136 +2,137 @@
 
 import os
 import time
-import uuid
 import base64
-from typing import Optional
-
 import requests
-import urllib3
+
+from typing import Optional
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from urllib3.exceptions import InsecureRequestWarning
 
-# ── Отключаем предупреждения про самоподписанные сертификаты ───────────────
-urllib3.disable_warnings(InsecureRequestWarning)
+API_BASE     = "https://apibox.erweima.ai/api/v1"
+API_KEY      = os.getenv("SUNO_API_KEY")
+CALLBACK_URL = "http://localhost/callback"  # Suno требует
 
-# ── OAuth / API настройки ────────────────────────────────────────────────────
-CLIENT_ID     = os.getenv("GIGACHAT_CLIENT_ID")
-CLIENT_SECRET = os.getenv("GIGACHAT_CLIENT_SECRET")
-SCOPE         = os.getenv("GIGACHAT_SCOPE", "GIGACHAT_API_PERS")
+if not API_KEY:
+    raise RuntimeError("Не задан SUNO_API_KEY в окружении")
 
-OAUTH_URL     = os.getenv(
-    "GIGACHAT_OAUTH_URL",
-    "https://ngw.devices.sberbank.ru:9443/api/v2/oauth"
-)
-API_URL       = os.getenv(
-    "GIGACHAT_API_URL",
-    "https://gigachat.devices.sberbank.ru/api/v1/chat/completions"
-)
+HEADERS = {
+    "Authorization": f"Bearer {API_KEY}",
+    "Content-Type":  "application/json",
+}
 
-# ── Фиксированная модель для «музыкальной» генерации ─────────────────────────
-# (по договорённости — GigaChat-2 умеет и музыку, и текст)
-MODEL_NAME    = "GigaChat-2"
 
-# ── Кэш OAuth-токена ─────────────────────────────────────────────────────────
-_access_token: Optional[str] = None
-_expires_at:   float        = 0.0
-
-# ── Pydantic-модель входящего запроса ──────────────────────────────────────
 class MusicRequest(BaseModel):
     prompt: str
 
-# ── FastAPI-роутер ──────────────────────────────────────────────────────────
+
 router = APIRouter(prefix="/music", tags=["music"])
 
 
-def get_access_token() -> str:
-    """
-    Возвращает валидный OAuth-токен GigaChat.
-    Если кэш просрочен или пуст — запрашивает новый.
-    """
-    global _access_token, _expires_at
-    now = time.time()
-
-    # если ещё не просрочен — отдаем
-    if _access_token and now < _expires_at - 60:
-        return _access_token
-
-    if not CLIENT_ID or not CLIENT_SECRET:
-        raise HTTPException(500, "GIGACHAT_CLIENT_ID/CLIENT_SECRET must be set")
-
-    # Basic Auth: base64(CLIENT_ID:CLIENT_SECRET)
-    basic = base64.b64encode(f"{CLIENT_ID}:{CLIENT_SECRET}".encode()).decode()
-    headers = {
-        "Authorization": f"Basic {basic}",
-        "Content-Type":  "application/x-www-form-urlencoded",
-        "Accept":        "application/json",
-        "RqUID":         str(uuid.uuid4()),
+def _create_task(prompt: str) -> str:
+    body = {
+        "prompt":       prompt,
+        "customMode":   False,
+        "instrumental": False,
+        "model":        "V4",
+        "callBackUrl":  CALLBACK_URL,
     }
-    data = {"scope": SCOPE}
-
-    resp = requests.post(OAUTH_URL, headers=headers, data=data, timeout=10, verify=False)
+    resp = requests.post(f"{API_BASE}/generate", json=body, headers=HEADERS, timeout=30)
     if resp.status_code != 200:
-        raise HTTPException(resp.status_code, f"OAuth error: {resp.text}")
-
-    js = resp.json()
-    token      = js.get("access_token")
-    expires_ts = js.get("expires_at")
-    if not token or not expires_ts:
-        raise HTTPException(500, f"Invalid OAuth response: {js}")
-
-    _access_token = token
-    _expires_at   = float(expires_ts)
-    return _access_token
+        raise HTTPException(resp.status_code, f"Suno create error: {resp.text}")
+    js = resp.json().get("data") or {}
+    task_id = js.get("task_id") or js.get("taskId")
+    if not task_id:
+        raise HTTPException(500, f"Bad create response: {resp.json()}")
+    return task_id
 
 
-@router.post("", summary="Generate music via GigaChat-2")
+def _get_audio_url(task_id: str, timeout: int = 600, delay: int = 3) -> str:
+    """
+    Ожидаем до `timeout` секунд, проверяя каждую `delay` сек.
+    Поддерживаем различные варианты ответа Suno.
+    """
+    start = time.time()
+
+    while True:
+        resp = requests.get(
+            f"{API_BASE}/generate/record-info",
+            params={"taskId": task_id},
+            headers=HEADERS,
+            timeout=10
+        )
+        if resp.status_code != 200:
+            raise HTTPException(resp.status_code, f"Suno status error: {resp.text}")
+
+        full = resp.json()
+        info = full.get("data") if isinstance(full, dict) else None
+
+        # статус может быть либо в info, либо в корне full
+        status = None
+        if isinstance(info, dict):
+            status = info.get("status") or info.get("callbackType")
+        if not status:
+            status = full.get("status") or full.get("msg")
+
+        # готово?
+        if status in ("SUCCESS", "complete"):
+            raw_list = None
+
+            # 1) ищем data.data
+            if isinstance(info, dict):
+                raw_list = info.get("data")
+            # 2) иногда data:{ data: [...] }
+            if raw_list is None and isinstance(full.get("data"), dict):
+                raw_list = full["data"].get("data")
+            # 3) сам Suno кладёт всё в data.response.sunoData
+            if raw_list is None and isinstance(info, dict):
+                resp_block = info.get("response")
+                if isinstance(resp_block, dict):
+                    raw_list = resp_block.get("sunoData")
+            # 4) на всякий случай, если full["data"] сам список
+            if raw_list is None and isinstance(full.get("data"), list):
+                raw_list = full["data"]
+
+            if not isinstance(raw_list, list):
+                raise HTTPException(500, f"No audio list in response: {full}")
+            if not raw_list:
+                raise HTTPException(500, f"Empty audio list: {full}")
+
+            first = raw_list[0]
+            for key in ("audio_url", "url", "audioUrl", "songUrl"):
+                if isinstance(first, dict) and first.get(key):
+                    return first[key]
+
+            raise HTTPException(500, f"No audio_url found in first item: {first}")
+
+        # упало?
+        if status in ("FAILED", "ERROR"):
+            msg = (info or {}).get("msg") or full.get("msg")
+            raise HTTPException(500, f"Suno task failed: {msg or full}")
+
+        # таймаут
+        if time.time() - start > timeout:
+            raise HTTPException(504, "Timeout waiting for Suno (10 minutes exceeded)")
+
+        time.sleep(delay)
+
+
+def _download_audio(url: str) -> bytes:
+    resp = requests.get(url, timeout=30)
+    if resp.status_code != 200:
+        raise HTTPException(resp.status_code, f"Download error: {resp.text}")
+    return resp.content
+
+
+@router.post("", summary="Generate music via Suno")
 def generate_music(req: MusicRequest):
     """
     POST /api/music
-    Вход:  {"prompt": "..."}
-    Выход: {"response": "..."} — base64-аудио или текст (в зависимости от модели).
+    Вход:  {"prompt":"..."}
+    Выход: {"response":"<base64-аудио>"}
     """
-    token = get_access_token()
-    headers = {
-        "Authorization": f"Bearer {token}",
-        "Accept":        "application/json",
-        "Content-Type":  "application/json",
-        "RqUID":         str(uuid.uuid4()),
-    }
-
-    body = {
-        "model": MODEL_NAME,
-        "messages": [
-            {"role": "user", "content": req.prompt}
-        ]
-    }
-
-    # первый запрос
-    resp = requests.post(API_URL, headers=headers, json=body, timeout=60, verify=False)
-
-    # обновляем токен и пробуем ещё раз, если 401
-    if resp.status_code == 401:
-        global _expires_at
-        _expires_at = 0
-        token = get_access_token()
-        headers["Authorization"] = f"Bearer {token}"
-        resp = requests.post(API_URL, headers=headers, json=body, timeout=60, verify=False)
-
-    if resp.status_code != 200:
-        raise HTTPException(resp.status_code, f"GigaChat error: {resp.text}")
-
-    result = resp.json()
-    # пробуем взять аудио или текст
-    audio_b64 = result.get("audio") or result.get("content")
-    if audio_b64:
-        return {"response": audio_b64}
-
-    # иначе — стандартная структура choices[0].message.content
-    choices = result.get("choices")
-    if isinstance(choices, list) and choices:
-        content = choices[0].get("message", {}).get("content")
-        if content:
-            return {"response": content}
-
-    raise HTTPException(500, f"Unexpected response format: {result}")
+    task_id   = _create_task(req.prompt)
+    audio_url = _get_audio_url(task_id)
+    audio_b   = _download_audio(audio_url)
+    audio_b64 = base64.b64encode(audio_b).decode()
+    return {"response": audio_b64}
