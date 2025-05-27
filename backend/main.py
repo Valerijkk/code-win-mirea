@@ -1,3 +1,4 @@
+# backend/main.py
 import os, subprocess, time, uuid, socket, urllib.parse
 from pathlib import Path
 from typing import List
@@ -5,9 +6,7 @@ from typing import List
 from dotenv import load_dotenv
 from fastapi import FastAPI, Depends, Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy import (
-    Column, Integer, String, ForeignKey, Text, DateTime, create_engine
-)
+from sqlalchemy import Column, Integer, String, ForeignKey, Text, DateTime, create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker, relationship, Session
 from sqlalchemy.sql import func
 from pydantic import BaseModel
@@ -18,17 +17,15 @@ load_dotenv(BASE_DIR / ".env")
 
 DEFAULT_SQLITE = f"sqlite:///{BASE_DIR/'warai.db'}"
 DB_URL = os.getenv("DATABASE_URL", DEFAULT_SQLITE)
-
-# при SQLite нужен спец-параметр
 connect_args = {"check_same_thread": False} if DB_URL.startswith("sqlite") else {}
 engine = create_engine(DB_URL, pool_pre_ping=True, echo=False, connect_args=connect_args)
 SessionLocal = sessionmaker(bind=engine, expire_on_commit=False)
 Base = declarative_base()
 
-# ───── модели ──────────────────────────────────────────────────────────────
+# ───── ORM-модели ───────────────────────────────────────────────────────────
 class User(Base):
     __tablename__ = "users"
-    id   = Column(String, primary_key=True)         # uuid str
+    id   = Column(String, primary_key=True)           # uuid str
     name = Column(String, nullable=False)
     chats = relationship("Chat", back_populates="user")
 
@@ -78,7 +75,7 @@ def current_user(
     return user
 
 # ───── FastAPI ─────────────────────────────────────────────────────────────
-app = FastAPI(title="WarDiaryAI", version="2.2")
+app = FastAPI(title="WarDiary AI", version="3.0")
 
 app.add_middleware(
     CORSMiddleware,
@@ -157,16 +154,15 @@ def load_messages(
         for m in chat.msgs
     ]
 
-# ───── генеративные роуты (без изменений) ─────────────────────────────────
-from routes.emotion import router as emotion_router
-from routes.text    import router as text_router
-from routes.image   import router as image_router
-from routes.music   import router as music_router
+# ───── генеративные роуты ─────────────────────────────────────────────────
+from routes.story  import router as story_router   # ⟵ объединённый анализ + рассказ
+from routes.image  import router as image_router
+from routes.music  import router as music_router
 
-for r in (emotion_router, text_router, image_router, music_router):
+for r in (story_router, image_router, music_router):
     app.include_router(r, prefix="/api")
 
-# ───── Ollama авто-старт ───────────────────────────────────────
+# ───── Ollama авто-запуск (как было) ───────────────────────────────────────
 OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://127.0.0.1:11434")
 if os.getenv("AUTO_OLLAMA", "true").lower() == "true":
     host, port = urllib.parse.urlparse(OLLAMA_HOST).netloc.split(":")
