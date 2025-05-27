@@ -167,11 +167,13 @@ aside {
 }
 
 /* сообщения */
-.messages {
-    flex: 1;
-    padding: 18px 22px;
-    overflow-y: auto;
-    overflow-x: hidden;
+.messages{
+    flex:1;
+    display:flex;
+    flex-direction:column;  /* ← ключ: .bubble.user смещается вправо */
+    padding:18px 22px;
+    overflow-y:auto;
+    overflow-x:hidden;
 }
 .messages::-webkit-scrollbar {
     width: 6px;
@@ -181,28 +183,20 @@ aside {
     border-radius: 3px;
 }
 
-/* bubble */
-.bubble {
-    max-width: 80%;
-    margin-bottom: 10px;
-    padding: 8px 12px;
-    border-radius: 14px;
-    line-height: 1.4;
-    white-space: pre-wrap;
-    word-break: break-word;       /* перенос слов по необходимости */
-    overflow-wrap: anywhere;      /* ещё гарантии переноса */
-    box-shadow: 0 1px 3px #0007;
+/* пузырь */
+.bubble{
+    max-width:80%;
+    margin-bottom:10px;
+    padding:8px 12px;
+    border-radius:14px;
+    line-height:1.4;
+    white-space:pre-wrap;
+    word-break:break-word;
+    overflow-wrap:anywhere;
+    box-shadow:0 1px 3px #0007;
 }
-.bubble.user {
-    align-self: flex-end;
-    background: var(--bubble-user);
-    color: var(--fg);
-}
-.bubble.bot {
-    align-self: flex-start;
-    background: var(--bubble-bot);
-    color: var(--fg);
-}
+.bubble.user{align-self:flex-end;background:var(--bubble-user);color:var(--fg)}
+.bubble.bot {align-self:flex-start;background:var(--bubble-bot);color:var(--fg)}
 .bubble img {
     max-width: 100%;
     border-radius: 10px;
